@@ -1,4 +1,3 @@
-
 export type TimeHorizon = 'Weekly' | 'Monthly' | 'SixMonth';
 
 export interface Goal {
@@ -64,4 +63,5 @@ export interface AppState {
   timerTimeLeft: number;
   isTimerActive: boolean;
   timerMode: TimerMode;
+  activeFocusTaskId?: string;
 }
