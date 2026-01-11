@@ -1,23 +1,26 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Goal } from '../types';
+import { Goal, Language } from '../types';
 import { CATEGORY_ICONS, CATEGORY_COLORS } from '../constants';
-import { Check, X, Trash2 } from 'lucide-react';
+import { Check, X, Trash2, Calendar as CalendarIcon } from 'lucide-react';
 import { audio } from '../services/audioService';
+import { translations } from '../translations';
 
 interface GoalCardProps {
   goal: Goal;
+  language: Language;
   onUpdateProgress: (id: string, newVal: number) => void;
   onDeleteGoal?: (id: string) => void;
 }
 
-const GoalCard: React.FC<GoalCardProps> = ({ goal, onUpdateProgress, onDeleteGoal }) => {
+const GoalCard: React.FC<GoalCardProps> = ({ goal, language, onUpdateProgress, onDeleteGoal }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(goal.currentValue.toString());
   const inputRef = useRef<HTMLInputElement>(null);
   
   const percentage = Math.min(100, Math.round((goal.currentValue / goal.targetValue) * 100));
   const categoryColor = CATEGORY_COLORS[goal.category] || '#2eaadc';
+  const t = translations[language];
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -53,6 +56,17 @@ const GoalCard: React.FC<GoalCardProps> = ({ goal, onUpdateProgress, onDeleteGoa
     setIsEditing(true);
   };
 
+  const getTimeRemaining = () => {
+    if (!goal.targetDate) return null;
+    const now = new Date();
+    const target = new Date(goal.targetDate);
+    const diff = target.getTime() - now.getTime();
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    return days > 0 ? days : 0;
+  };
+
+  const daysLeft = getTimeRemaining();
+
   return (
     <div 
       onClick={() => !isEditing && startEdit()}
@@ -62,7 +76,6 @@ const GoalCard: React.FC<GoalCardProps> = ({ goal, onUpdateProgress, onDeleteGoa
           : 'border-white/5 bg-[#141414] hover:border-white/20 hover:bg-[#181818] shadow-lg'
       }`}
     >
-      {/* Background Subtle Gradient */}
       <div 
         className="absolute top-0 right-0 w-48 h-48 -mr-24 -mt-24 opacity-[0.05] blur-3xl pointer-events-none group-hover:opacity-[0.08] transition-opacity"
         style={{ backgroundColor: categoryColor }}
@@ -77,7 +90,7 @@ const GoalCard: React.FC<GoalCardProps> = ({ goal, onUpdateProgress, onDeleteGoa
             <h3 className="text-[18px] font-black text-white/95 leading-tight tracking-tight">
               {goal.title}
             </h3>
-            <span className="text-[10px] text-white/30 uppercase font-black tracking-[0.3em]">{goal.horizon}</span>
+            <span className="text-[10px] text-white/30 uppercase font-black tracking-[0.3em]">{t[goal.horizon as keyof typeof t] || goal.horizon}</span>
           </div>
         </div>
         
@@ -133,6 +146,20 @@ const GoalCard: React.FC<GoalCardProps> = ({ goal, onUpdateProgress, onDeleteGoa
             }}
           />
         </div>
+
+        {goal.targetDate && (
+          <div className="flex items-center justify-between pt-2">
+            <div className="flex items-center gap-2 text-[10px] text-white/20 font-black uppercase tracking-widest">
+              <CalendarIcon className="w-3 h-3" />
+              <span>{t.deadline}: {new Date(goal.targetDate).toLocaleDateString(language === 'ar' ? 'ar-EG' : 'en-US', { day: 'numeric', month: 'short' })}</span>
+            </div>
+            {daysLeft !== null && (
+               <div className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${daysLeft < 3 ? 'bg-red-500/10 text-red-500' : 'bg-white/5 text-white/30'}`}>
+                 {daysLeft} {t.daysLeft}
+               </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

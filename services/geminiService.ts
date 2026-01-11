@@ -2,7 +2,6 @@
 import { GoogleGenAI } from "@google/genai";
 import { AppState } from "../types";
 
-// Fix: Strictly follow initialization guidelines (named parameter, direct process.env.API_KEY)
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const getDailyMotivation = async () => {
@@ -15,35 +14,36 @@ export const getDailyMotivation = async () => {
         temperature: 0.7,
       }
     });
-    // Fix: Access .text property directly (not a method)
     return response.text || "Discipline is the bridge between goals and accomplishment.";
   } catch (error) {
-    console.error("Error fetching motivation:", error);
     return "Discipline is the bridge between goals and accomplishment.";
   }
 };
 
-export const getWeeklyReview = async (state: AppState) => {
+export const getStrategicPerformanceReport = async (state: AppState) => {
   try {
-    const prompt = `Review my current progress and provide 3 actionable pieces of advice:
-    - Income: $${state.incomeTotal}
-    - Tasks Completed: ${state.tasks.filter(t => t.isCompleted).length}
-    - Goals: ${JSON.stringify(state.goals.map(g => ({ title: g.title, progress: (g.currentValue / g.targetValue) * 100 + '%' })))}
+    const prompt = `Analyze my recent execution data and provide a high-level strategic audit:
+    - Focus Minutes (Total): ${state.focusMinutesToday} today
+    - Sessions History: ${JSON.stringify(state.sessionHistory.slice(-10))}
+    - Tasks Efficiency: ${state.tasks.filter(t => t.isCompleted).length} completed vs ${state.tasks.filter(t => t.isSkipped).length} skipped.
     
-    Provide the response in a structured, concise way focusing on discipline and consistency.`;
+    Format:
+    1. CURRENT VELOCITY (One sentence)
+    2. THE BOTTLENECK (One tactical observation)
+    3. STRATEGIC ADJUSTMENT (One high-level pivot)
+    
+    Tone: Extremely professional, data-driven, entrepreneurial, stoic.`;
 
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: prompt,
       config: {
-        systemInstruction: "You are a professional business and growth coach. Provide concise, high-impact feedback. Focus on the 'Ihsan' (excellence) mindset.",
+        systemInstruction: "You are a Chief Performance Officer. Your job is to analyze data and give blunt, actionable, and elite-level feedback to a high-achieving founder.",
         temperature: 0.4,
       }
     });
-    // Fix: Access .text property directly (not a method)
-    return response.text || "Focus on your morning habits to win the day.";
+    return response.text || "Continue executing with precision. Data suggests focus is currently stable.";
   } catch (error) {
-    console.error("Error fetching weekly review:", error);
     return "Focus on your morning habits to win the day.";
   }
 };
