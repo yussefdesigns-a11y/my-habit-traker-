@@ -7,7 +7,6 @@ import {
   Zap, MoreVertical, Bookmark, ZapOff, 
   CornerUpRight, Command, Maximize2
 } from 'lucide-react';
-import { audio } from '../services/audioService';
 import { translations } from '../translations';
 
 interface InspirationBoardProps {
@@ -59,7 +58,6 @@ const InspirationBoard: React.FC<InspirationBoardProps> = ({ items, language, on
       const reader = new FileReader();
       reader.onloadend = () => {
         setNewItem(prev => ({ ...prev, content: reader.result as string }));
-        audio.playPop();
       };
       reader.readAsDataURL(file);
     }
@@ -69,7 +67,6 @@ const InspirationBoard: React.FC<InspirationBoardProps> = ({ items, language, on
     e.preventDefault();
     if (!newItem.title || !newItem.content) return;
     
-    audio.playSuccess();
     onAddItem(newItem);
     setIsModalOpen(false);
     setNewItem({
@@ -84,7 +81,6 @@ const InspirationBoard: React.FC<InspirationBoardProps> = ({ items, language, on
 
   const handleCopy = (id: string, text: string) => {
     navigator.clipboard.writeText(text);
-    audio.playSuccess();
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
   };
@@ -123,7 +119,7 @@ const InspirationBoard: React.FC<InspirationBoardProps> = ({ items, language, on
             />
           </div>
           <button 
-            onClick={() => { audio.playPop(); setIsModalOpen(true); }}
+            onClick={() => { setIsModalOpen(true); }}
             className="px-10 py-5 bg-emerald-600 text-white rounded-[24px] font-black uppercase tracking-widest text-[11px] shadow-2xl shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105 active:scale-95 transition-all flex items-center gap-4"
           >
             <Plus className="w-4 h-4" /> Deposit Creative Asset
@@ -137,7 +133,7 @@ const InspirationBoard: React.FC<InspirationBoardProps> = ({ items, language, on
           {['all', 'image', 'color', 'font', 'link'].map((t) => (
             <button 
               key={t}
-              onClick={() => { audio.playClick(); setFilterType(t as any); }}
+              onClick={() => { setFilterType(t as any); }}
               className={`px-8 py-4 rounded-[24px] text-[10px] font-black uppercase tracking-widest transition-all ${filterType === t ? 'bg-white text-black shadow-2xl scale-105' : 'text-white/20 hover:text-white/60 hover:bg-white/5'}`}
             >
               {t}
@@ -243,7 +239,7 @@ const InspirationBoard: React.FC<InspirationBoardProps> = ({ items, language, on
                       <h3 className="text-3xl font-black text-white uppercase tracking-tighter leading-none pt-2 group-hover:text-emerald-400 transition-colors italic">{item.title}</h3>
                    </div>
                    <button 
-                     onClick={() => { audio.playPop(); onDeleteItem(item.id); }}
+                     onClick={() => { onDeleteItem(item.id); }}
                      className="p-4 bg-white/5 rounded-[24px] opacity-0 group-hover:opacity-100 transition-all text-white/20 hover:text-rose-500 hover:bg-rose-500/10 border border-transparent"
                    >
                      <Trash2 className="w-5 h-5" />
@@ -294,7 +290,7 @@ const InspirationBoard: React.FC<InspirationBoardProps> = ({ items, language, on
                     <button 
                       key={t}
                       type="button"
-                      onClick={() => { audio.playClick(); setNewItem(prev => ({ ...prev, type: t, content: '' })); }}
+                      onClick={() => { setNewItem(prev => ({ ...prev, type: t, content: '' })); }}
                       className={`flex flex-col items-center justify-center py-8 rounded-[32px] border transition-all ${newItem.type === t ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400 shadow-4xl shadow-emerald-500/10' : 'bg-[#1A1A1A] border-white/5 text-white/20 hover:text-white/40'}`}
                     >
                       {t === 'image' && <ImageIcon className="w-7 h-7 mb-4" />}
@@ -336,7 +332,6 @@ const InspirationBoard: React.FC<InspirationBoardProps> = ({ items, language, on
                           if (val) {
                             setNewItem({...newItem, tags: [...newItem.tags, val]});
                             (e.target as HTMLInputElement).value = '';
-                            audio.playPop();
                           }
                         }
                       }} 

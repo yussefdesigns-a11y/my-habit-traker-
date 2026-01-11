@@ -9,7 +9,7 @@ export interface InspirationItem {
   type: InspirationType;
   title: string;
   category: string;
-  content: string; // Base64 for images, hex for colors, URL for links, font-family for fonts
+  content: string; 
   notes: string;
   tags: string[];
   createdAt: string;
@@ -26,7 +26,7 @@ export interface DesignProject {
   notes: string;
   links: string[]; 
   progress: number;
-  imageUrl?: string; // Base64 or URL for the project image
+  imageUrl?: string; 
 }
 
 export interface Goal {
@@ -39,7 +39,7 @@ export interface Goal {
   currentValue: number;
   unit: string;
   isCompleted: boolean;
-  targetDate?: string; // ISO string for the deadline
+  targetDate?: string; 
 }
 
 export interface Task {
@@ -50,9 +50,9 @@ export interface Task {
   isSkipped?: boolean;
   frequency: 'Daily' | 'Weekly';
   streakCount: number;
-  lastCompletedDate?: string; // ISO string
+  lastCompletedDate?: string; 
   linkedGoalId?: string;
-  linkedProjectId?: string; // New: link to project
+  linkedProjectId?: string; 
   estimatedMinutes?: number; 
   actualMinutesSpent?: number; 
 }
@@ -60,7 +60,7 @@ export interface Task {
 export interface FocusSession {
   id: string;
   taskId?: string;
-  startTime: string; // ISO
+  startTime: string; 
   durationMinutes: number;
   type: 'focus' | 'shortBreak' | 'longBreak';
 }
@@ -68,22 +68,26 @@ export interface FocusSession {
 export interface CalendarEvent {
   id: string;
   title: string;
-  date: string; // YYYY-MM-DD
-  category: 'Business' | 'Fitness' | 'Spirituality' | 'Learning';
+  date: string; 
+  time?: string; // Professional scheduling support
+  category: 'Business' | 'Fitness' | 'Learning' | 'Spirituality';
   isCompleted: boolean;
   description?: string;
 }
 
 export interface DailySummary {
-  date: string; // YYYY-MM-DD
-  mood: string;
-  reflection: string;
+  id: string;
+  date: string; 
+  score: number;
+  verdict: 'Diligent' | 'Lazy' | 'Neutral';
+  aiReflection: string;
   tasksSnapshot: {
     title: string;
     isCompleted: boolean;
-    isSkipped: boolean;
   }[];
-  incomeLogged: number;
+  focusMinutes: number;
+  sleepHours: number;
+  phoneHours: number;
 }
 
 export interface PrivateIntel {
@@ -128,4 +132,6 @@ export interface AppState {
   language: Language;
   rewardPoints: number; 
   totalXP: number; 
+  sleepHoursToday: number;
+  phoneHoursToday: number;
 }

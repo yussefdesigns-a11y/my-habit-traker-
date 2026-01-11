@@ -1,9 +1,8 @@
-
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, memo } from 'react';
 import { Goal, Language } from '../types';
 import { CATEGORY_ICONS, CATEGORY_COLORS } from '../constants';
-import { Check, X, Trash2, Calendar as CalendarIcon } from 'lucide-react';
-import { audio } from '../services/audioService';
+// Added missing Clock import
+import { Check, X, Trash2, Calendar as CalendarIcon, GripVertical, Target, TrendingUp, AlertCircle, Plus, Minus, Info, Clock } from 'lucide-react';
 import { translations } from '../translations';
 
 interface GoalCardProps {
@@ -13,13 +12,14 @@ interface GoalCardProps {
   onDeleteGoal?: (id: string) => void;
 }
 
-const GoalCard: React.FC<GoalCardProps> = ({ goal, language, onUpdateProgress, onDeleteGoal }) => {
+const GoalCard: React.FC<GoalCardProps> = memo(({ goal, language, onUpdateProgress, onDeleteGoal }) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
   const [editValue, setEditValue] = useState(goal.currentValue.toString());
   const inputRef = useRef<HTMLInputElement>(null);
   
   const percentage = Math.min(100, Math.round((goal.currentValue / goal.targetValue) * 100));
-  const categoryColor = CATEGORY_COLORS[goal.category] || '#2eaadc';
+  const categoryColor = CATEGORY_COLORS[goal.category] || '#6366f1';
   const t = translations[language];
 
   useEffect(() => {
@@ -31,138 +31,100 @@ const GoalCard: React.FC<GoalCardProps> = ({ goal, language, onUpdateProgress, o
 
   const handleSave = () => {
     const val = parseFloat(editValue);
-    if (!isNaN(val)) {
-      if (val > goal.currentValue) audio.playSuccess();
-      else audio.playPop();
-      onUpdateProgress(goal.id, val);
-    }
+    if (!isNaN(val)) onUpdateProgress(goal.id, val);
     setIsEditing(false);
   };
 
-  const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (onDeleteGoal) {
-      onDeleteGoal(goal.id);
-    }
+  const handleQuickAdjust = (delta: number) => {
+    const newVal = Math.max(0, goal.currentValue + delta);
+    onUpdateProgress(goal.id, newVal);
+    setEditValue(newVal.toString());
   };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') handleSave();
-    if (e.key === 'Escape') setIsEditing(false);
-  };
-
-  const startEdit = () => {
-    audio.playPop();
-    setIsEditing(true);
-  };
-
-  const getTimeRemaining = () => {
-    if (!goal.targetDate) return null;
-    const now = new Date();
-    const target = new Date(goal.targetDate);
-    const diff = target.getTime() - now.getTime();
-    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-    return days > 0 ? days : 0;
-  };
-
-  const daysLeft = getTimeRemaining();
 
   return (
-    <div 
-      onClick={() => !isEditing && startEdit()}
-      className={`relative overflow-hidden transition-all duration-300 rounded-[32px] p-8 cursor-pointer border group ${
-        isEditing 
-          ? 'border-[#2eaadc]/50 bg-[#1A1A1A] scale-[1.02] shadow-2xl shadow-[#2eaadc]/10' 
-          : 'border-white/5 bg-[#141414] hover:border-white/20 hover:bg-[#181818] shadow-lg'
-      }`}
-    >
-      <div 
-        className="absolute top-0 right-0 w-48 h-48 -mr-24 -mt-24 opacity-[0.05] blur-3xl pointer-events-none group-hover:opacity-[0.08] transition-opacity"
-        style={{ backgroundColor: categoryColor }}
-      />
-
-      <div className="flex items-start justify-between mb-8">
-        <div className="flex items-center gap-5">
-          <div className="p-4 rounded-[20px] bg-white/[0.03] border border-white/5 transition-transform duration-500 group-hover:scale-110">
-            {CATEGORY_ICONS[goal.category]}
-          </div>
-          <div>
-            <h3 className="text-[18px] font-black text-white/95 leading-tight tracking-tight">
-              {goal.title}
-            </h3>
-            <span className="text-[10px] text-white/30 uppercase font-black tracking-[0.3em]">{t[goal.horizon as keyof typeof t] || goal.horizon}</span>
-          </div>
+    <div className={`relative overflow-hidden transition-all duration-300 rounded-[2.5rem] border group bento-card ${isEditing ? 'border-indigo-500/50 ring-2 ring-indigo-500/10 scale-[1.01] z-10' : 'border-white/5'}`}>
+      <div className="flex items-center justify-between px-8 py-5 bg-white/[0.01] border-b border-white/5">
+        <div className="flex items-center gap-3">
+          <span className="data-label text-[0.6rem] text-white/20">ID-{goal.id.toUpperCase().slice(-6)}</span>
         </div>
-        
-        {!isEditing && onDeleteGoal && (
-          <button 
-            onClick={handleDelete}
-            className="opacity-0 group-hover:opacity-100 p-3 bg-red-500/5 text-red-500/40 hover:text-red-500 hover:bg-red-500/10 rounded-2xl transition-all"
-          >
-            <Trash2 className="w-5 h-5" />
+        <div className="flex items-center gap-2">
+          {percentage >= 100 ? (
+            <span className="px-4 py-1.5 bg-emerald-500/5 text-emerald-500 rounded-full text-[0.6rem] font-bold uppercase tracking-widest border border-emerald-500/10">MISSION SUCCESS</span>
+          ) : (
+            <span className="px-4 py-1.5 bg-indigo-500/5 text-indigo-500 rounded-full text-[0.6rem] font-bold uppercase tracking-widest border border-indigo-500/10">ACTIVE OBJECTIVE</span>
+          )}
+          <button onClick={() => setShowInfo(!showInfo)} className={`p-1.5 rounded-full transition-colors ${showInfo ? 'bg-indigo-500/20 text-indigo-400' : 'text-white/20 hover:text-white'}`}>
+            <Info className="w-3.5 h-3.5" />
           </button>
-        )}
+        </div>
       </div>
 
-      <div className="space-y-5">
-        <div className="flex justify-between items-end">
-          {isEditing ? (
-            <div className="flex items-center gap-4 w-full" onClick={(e) => e.stopPropagation()}>
-              <input
-                ref={inputRef}
-                type="number"
-                value={editValue}
-                onChange={(e) => setEditValue(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="w-24 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-sm font-bold text-white focus:outline-none focus:border-[#2eaadc] shadow-inner"
-              />
-              <span className="text-[12px] font-bold text-white/20">/ {goal.targetValue} {goal.unit}</span>
-              <div className="flex gap-2 ml-auto">
-                <button onClick={handleSave} className="p-3 bg-[#2eaadc] text-white rounded-2xl shadow-xl shadow-blue-500/20 active:scale-90 transition-transform"><Check className="w-5 h-5" /></button>
-                <button onClick={() => setIsEditing(false)} className="p-3 bg-white/5 text-white/40 rounded-2xl hover:bg-white/10"><X className="w-5 h-5" /></button>
+      {showInfo && (
+        <div className="px-8 py-6 bg-indigo-500/5 border-b border-white/5 animate-power">
+          <p className="text-sm text-white/50 leading-relaxed italic">
+            <span className="data-label text-indigo-400 block mb-1">Strategic Rationale</span>
+            {goal.description || "No strategic data provided for this objective."}
+          </p>
+        </div>
+      )}
+
+      <div className="p-10 space-y-8">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-6">
+            <div className="p-5 rounded-3xl border border-white/5 bg-white/[0.02] shadow-xl">{CATEGORY_ICONS[goal.category]}</div>
+            <div className="space-y-1">
+              <h3 className="text-2xl font-bold text-white tracking-tight group-hover:text-indigo-400 transition-colors uppercase italic">{goal.title}</h3>
+              <p className="data-label text-indigo-500/40">{goal.category} Sector</p>
+            </div>
+          </div>
+          <button onClick={(e) => { e.stopPropagation(); if(onDeleteGoal) onDeleteGoal(goal.id); }} className="opacity-0 group-hover:opacity-100 p-3 bg-white/5 rounded-2xl text-white/10 hover:text-rose-500 transition-all"><Trash2 className="w-5 h-5" /></button>
+        </div>
+
+        <div className="space-y-5">
+          <div className="flex justify-between items-end px-1">
+            <div className="space-y-1.5">
+              <span className="data-label">Strategy Progress</span>
+              <div className="flex items-center gap-4">
+                {isEditing ? (
+                  <input
+                    ref={inputRef} type="number" value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    onBlur={handleSave} onKeyDown={(e) => e.key === 'Enter' && handleSave()}
+                    className="w-24 bg-white/10 border border-indigo-500/20 rounded-xl px-3 py-1.5 text-lg font-bold text-white focus:outline-none font-data"
+                  />
+                ) : (
+                  <div className="flex items-center gap-4">
+                    <span onClick={() => setIsEditing(true)} className="text-4xl font-bold text-white tracking-tighter tabular-nums hover:text-indigo-400 cursor-pointer transition-colors font-data">
+                      {goal.currentValue.toLocaleString()}
+                    </span>
+                    <div className="flex gap-1">
+                      <button onClick={() => handleQuickAdjust(1)} className="p-1.5 bg-white/5 rounded-lg text-white/20 hover:text-indigo-400 hover:bg-indigo-500/10 transition-all"><Plus className="w-4 h-4" /></button>
+                      <button onClick={() => handleQuickAdjust(-1)} className="p-1.5 bg-white/5 rounded-lg text-white/20 hover:text-rose-400 hover:bg-rose-500/10 transition-all"><Minus className="w-4 h-4" /></button>
+                    </div>
+                  </div>
+                )}
+                <span className="text-sm font-bold text-white/10 pt-2 font-data">/ {goal.targetValue.toLocaleString()} {goal.unit}</span>
               </div>
             </div>
-          ) : (
-            <>
-              <p className="text-[24px] font-black text-white leading-none tracking-tighter">
-                {goal.currentValue} <span className="text-[13px] text-white/20 font-black uppercase tracking-[0.2em] ml-2">/ {goal.targetValue} {goal.unit}</span>
-              </p>
-              <div className="flex flex-col items-end">
-                <span className="text-[12px] font-black tracking-[0.2em] uppercase" style={{ color: percentage >= 100 ? '#10B981' : 'rgba(255,255,255,0.4)' }}>
-                  {percentage}%
-                </span>
-              </div>
-            </>
+            <div className="text-right"><span className="text-xl font-data font-bold text-indigo-500">{percentage}%</span></div>
+          </div>
+          <div className="h-3 w-full bg-white/5 rounded-full overflow-hidden p-[2px] border border-white/5">
+            <div className="h-full rounded-full transition-all duration-1000 ease-out" style={{ width: `${percentage}%`, backgroundColor: percentage >= 100 ? '#10b981' : categoryColor, boxShadow: `0 0 20px ${percentage >= 100 ? '#10b98144' : categoryColor + '44'}` }} />
+          </div>
+        </div>
+
+        <div className="pt-8 border-t border-white/5 flex items-center justify-between">
+          <div className="flex items-center gap-3 text-sm text-white/30 font-bold"><Target className="w-4 h-4" /> {t[goal.horizon as keyof typeof t] || goal.horizon} Period</div>
+          {percentage < 100 && (
+            <div className="flex items-center gap-2 px-4 py-2 bg-indigo-500/5 rounded-2xl border border-indigo-500/10">
+              <Clock className="w-3.5 h-3.5 text-indigo-400" />
+              <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Active Phase</span>
+            </div>
           )}
         </div>
-
-        <div className="h-2.5 w-full bg-white/[0.03] rounded-full overflow-hidden border border-white/5">
-          <div 
-            className="h-full transition-all duration-1000 ease-out shadow-[0_0_20px_rgba(0,0,0,0.5)]"
-            style={{ 
-              width: `${percentage}%`, 
-              backgroundColor: percentage >= 100 ? '#10B981' : categoryColor,
-              boxShadow: `0 0 25px ${percentage >= 100 ? '#10B98155' : categoryColor + '55'}`
-            }}
-          />
-        </div>
-
-        {goal.targetDate && (
-          <div className="flex items-center justify-between pt-2">
-            <div className="flex items-center gap-2 text-[10px] text-white/20 font-black uppercase tracking-widest">
-              <CalendarIcon className="w-3 h-3" />
-              <span>{t.deadline}: {new Date(goal.targetDate).toLocaleDateString(language === 'ar' ? 'ar-EG' : 'en-US', { day: 'numeric', month: 'short' })}</span>
-            </div>
-            {daysLeft !== null && (
-               <div className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${daysLeft < 3 ? 'bg-red-500/10 text-red-500' : 'bg-white/5 text-white/30'}`}>
-                 {daysLeft} {t.daysLeft}
-               </div>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );
-};
+});
 
 export default GoalCard;

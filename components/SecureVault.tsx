@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { 
   Lock, ShieldAlert, Key, Zap, 
@@ -8,7 +7,6 @@ import {
   LockKeyhole
 } from 'lucide-react';
 import { PrivateIntel, FinancialLog, Language } from '../types';
-import { audio } from '../services/audioService';
 import { translations } from '../translations';
 
 interface SecureVaultProps {
@@ -36,11 +34,9 @@ const SecureVault: React.FC<SecureVaultProps> = ({
   const handleUnlock = (e: React.FormEvent) => {
     e.preventDefault();
     if (passcode === CORRECT_PASSCODE) {
-      audio.playSuccess();
       setIsUnlocked(true);
       setError(false);
     } else {
-      audio.playDelete();
       setError(true);
       setPasscode('');
       setTimeout(() => setError(false), 2000);
@@ -107,7 +103,7 @@ const SecureVault: React.FC<SecureVaultProps> = ({
         </div>
 
         <button 
-          onClick={() => { audio.playPop(); setIsUnlocked(false); setPasscode(''); }}
+          onClick={() => { setIsUnlocked(false); setPasscode(''); }}
           className="px-10 py-5 bg-white/5 text-white/40 rounded-[24px] font-black uppercase tracking-widest text-[11px] hover:text-rose-500 hover:bg-rose-500/10 transition-all flex items-center gap-4"
         >
           <Key className="w-4 h-4" /> LOCK TERMINAL

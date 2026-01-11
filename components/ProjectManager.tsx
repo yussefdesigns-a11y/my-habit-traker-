@@ -9,7 +9,6 @@ import {
   MoreHorizontal, Zap, Briefcase, 
   Target, Shield, Layers
 } from 'lucide-react';
-import { audio } from '../services/audioService';
 import { translations } from '../translations';
 
 interface ProjectManagerProps {
@@ -63,7 +62,6 @@ const ProjectManager: React.FC<ProjectManagerProps> = ({
       const reader = new FileReader();
       reader.onloadend = () => {
         setNewProject(prev => ({ ...prev, imageUrl: reader.result as string }));
-        audio.playPop();
       };
       reader.readAsDataURL(file);
     }
@@ -71,7 +69,6 @@ const ProjectManager: React.FC<ProjectManagerProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    audio.playSuccess();
     onAddProject(newProject);
     setIsAddModalOpen(false);
     setNewProject({
@@ -136,7 +133,7 @@ const ProjectManager: React.FC<ProjectManagerProps> = ({
             />
           </div>
           <button 
-            onClick={() => { audio.playPop(); setIsAddModalOpen(true); }}
+            onClick={() => { setIsAddModalOpen(true); }}
             className="px-10 py-5 bg-[#2eaadc] text-white rounded-[24px] font-black uppercase tracking-widest text-[11px] shadow-2xl shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-105 active:scale-95 transition-all flex items-center gap-4"
           >
             <Plus className="w-4 h-4" /> Initialize Deployment
@@ -165,7 +162,7 @@ const ProjectManager: React.FC<ProjectManagerProps> = ({
             return (
               <div 
                 key={project.id} 
-                onClick={() => { audio.playClick(); setSelectedProject(project); }}
+                onClick={() => { setSelectedProject(project); }}
                 className={`reveal-item delay-${(idx % 5) + 1} glass-panel overflow-hidden group relative cursor-pointer hover:border-[#2eaadc]/40 transition-all hover:translate-y-[-8px] shadow-2xl`}
               >
                 {project.imageUrl && (
@@ -187,7 +184,7 @@ const ProjectManager: React.FC<ProjectManagerProps> = ({
                 <div className="p-10 space-y-10">
                   <div className="absolute top-8 right-8 opacity-0 group-hover:opacity-100 transition-all z-20 translate-y-2 group-hover:translate-y-0">
                     <button 
-                      onClick={(e) => { e.stopPropagation(); audio.playPop(); onDeleteProject(project.id); }} 
+                      onClick={(e) => { e.stopPropagation(); onDeleteProject(project.id); }} 
                       className="p-4 bg-black/60 backdrop-blur-2xl rounded-2xl text-white/40 hover:text-rose-500 transition-all active:scale-90 border border-white/5"
                     >
                       <Trash2 className="w-5 h-5" />
@@ -292,7 +289,7 @@ const ProjectManager: React.FC<ProjectManagerProps> = ({
                         <button 
                           key={pr} 
                           type="button"
-                          onClick={() => { audio.playClick(); setNewProject({...newProject, priority: pr as any}); }}
+                          onClick={() => { setNewProject({...newProject, priority: pr as any}); }}
                           className={`flex-1 py-5 rounded-[20px] text-[10px] font-black uppercase tracking-widest transition-all border ${newProject.priority === pr ? 'bg-[#2eaadc] border-[#2eaadc] text-white shadow-xl shadow-blue-500/20' : 'bg-white/5 border-white/5 text-white/20 hover:text-white/40'}`}
                         >
                           {pr}
